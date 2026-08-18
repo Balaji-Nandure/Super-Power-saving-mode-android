@@ -51,6 +51,14 @@
             android:parentActivityName=".MainActivity"
             android:theme="@style/Theme.SuperPowerSaving.NoActionBar" />
 
+        <!-- Battery Analytics & Graphs Activity -->
+        <activity
+            android:name=".AnalyticsActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/Theme.SuperPowerSaving.NoActionBar" />
+
         <!-- Notification Gatekeeper Service to filter unwanted notifications -->
         <service
             android:name=".NotificationGatekeeperService"

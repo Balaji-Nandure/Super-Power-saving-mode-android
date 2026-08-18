@@ -13,10 +13,13 @@ import android.graphics.Paint
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.provider.Settings
 import android.view.View
 import android.view.Window
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -28,6 +31,7 @@ import androidx.recyclerview.widget.RecyclerView
 class MainActivity : AppCompatActivity() {
 
     private lateinit var prefsManager: PreferencesManager
+    private lateinit var historyManager: BatteryHistoryManager
     private lateinit var rootLayout: View
     private lateinit var rvAllowedApps: RecyclerView
     private lateinit var tvBatteryPercent: TextView
@@ -44,6 +48,25 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnToggleExtreme: Button
     private lateinit var sectionAppsHeader: View
 
+    // ⚡ Telemetry HUD Views
+    private lateinit var cardBatteryHud: View
+    private lateinit var ivChargingIcon: ImageView
+    private lateinit var tvChargingHeadline: TextView
+    private lateinit var tvWattageVal: TextView
+    private lateinit var tvCurrentVal: TextView
+    private lateinit var tvVoltageVal: TextView
+    private lateinit var tvTempVal: TextView
+    private lateinit var tvChargerTypeVal: TextView
+    private lateinit var tvTimeToFullVal: TextView
+
+    private val telemetryHandler = Handler(Looper.getMainLooper())
+    private val telemetryRunnable = object : Runnable {
+        override fun run() {
+            updateBatteryTelemetry()
+            telemetryHandler.postDelayed(this, 1500) // Live update every 1.5s
+        }
+    }
+
     private val selectAppsLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == RESULT_OK) {
@@ -53,7 +76,8 @@ class MainActivity : AppCompatActivity() {
 
     private val batteryReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            updateBatteryDisplay()
+            updateBatteryTelemetry()
+            logBatteryPoint()
         }
     }
 
@@ -62,11 +86,13 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         prefsManager = PreferencesManager(this)
+        historyManager = BatteryHistoryManager(this)
 
         initViews()
-        updateBatteryDisplay()
+        updateBatteryTelemetry()
         loadWhitelistedApps()
         updatePowerSaveStateUi()
+        logBatteryPoint()
 
         if (prefsManager.isExtremeModeEnabled) {
             PowerManagerHelper.applyExtremeSurvivorProfile(this)
@@ -80,11 +106,11 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         registerReceiver(batteryReceiver, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
-        updateBatteryDisplay()
+        telemetryHandler.post(telemetryRunnable)
         loadWhitelistedApps()
         updatePowerSaveStateUi()
+        logBatteryPoint()
 
-        // Keep non-whitelisted background processes cleared
         if (prefsManager.isPowerSavingEnabled || prefsManager.isExtremeModeEnabled) {
             PowerManagerHelper.killAllBackgroundProcesses(this)
             PowerManagerHelper.ensureRingtoneAudible(this)
@@ -93,6 +119,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
+        telemetryHandler.removeCallbacks(telemetryRunnable)
         try {
             unregisterReceiver(batteryReceiver)
         } catch (e: Exception) {
@@ -125,7 +152,26 @@ class MainActivity : AppCompatActivity() {
         sectionAppsHeader = findViewById(R.id.sectionAppsHeader)
         rvAllowedApps = findViewById(R.id.rvAllowedApps)
 
+        // Telemetry HUD Elements
+        cardBatteryHud = findViewById(R.id.cardBatteryHud)
+        ivChargingIcon = findViewById(R.id.ivChargingIcon)
+        tvChargingHeadline = findViewById(R.id.tvChargingHeadline)
+        tvWattageVal = findViewById(R.id.tvWattageVal)
+        tvCurrentVal = findViewById(R.id.tvCurrentVal)
+        tvVoltageVal = findViewById(R.id.tvVoltageVal)
+        tvTempVal = findViewById(R.id.tvTempVal)
+        tvChargerTypeVal = findViewById(R.id.tvChargerTypeVal)
+        tvTimeToFullVal = findViewById(R.id.tvTimeToFullVal)
+
         rvAllowedApps.layoutManager = LinearLayoutManager(this)
+
+        // 📈 Tap Battery HUD to open Full Visual Graph & Analytics Screen
+        cardBatteryHud.isClickable = true
+        cardBatteryHud.isFocusable = true
+        cardBatteryHud.setOnClickListener {
+            val intent = Intent(this, AnalyticsActivity::class.java)
+            startActivity(intent)
+        }
 
         // Emergency / Phone Dialer Action
         cardEmergencyPhone.setOnClickListener {
@@ -163,7 +209,6 @@ class MainActivity : AppCompatActivity() {
         // 1% Extreme Blackout Mode Toggle
         btnToggleExtreme.setOnClickListener {
             if (prefsManager.isExtremeModeEnabled) {
-                // Exit Extreme back to 10% Super Mode
                 prefsManager.isExtremeModeEnabled = false
                 prefsManager.isPowerSavingEnabled = true
                 PowerManagerHelper.applySuperPowerSaving(this)
@@ -171,7 +216,6 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(this, "Switched to 10% Super Mode (6 Apps Active)", Toast.LENGTH_SHORT).show()
                 updatePowerSaveStateUi()
             } else {
-                // Show Extreme Mode Activation Dialog
                 showExtremeModeConfirmationDialog()
             }
         }
@@ -201,14 +245,43 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun updateBatteryDisplay() {
+    private fun logBatteryPoint() {
         val pct = PowerManagerHelper.getBatteryPercentage(this)
         val isCharging = PowerManagerHelper.isCharging(this)
+        historyManager.recordDataPoint(pct, isCharging, true)
+    }
 
-        if (pct >= 0) {
-            tvBatteryPercent.text = if (isCharging) "$pct% (Charging)" else "$pct% Battery"
+    private fun updateBatteryTelemetry() {
+        val t = BatteryAnalyticsHelper.getRealTimeTelemetry(this)
+
+        tvBatteryPercent.text = "${t.percentage}%"
+        tvChargingHeadline.text = t.chargeSpeedLabel
+        tvWattageVal.text = "${String.format("%.1f", t.wattage)} W"
+        tvCurrentVal.text = if (t.currentMa > 0) "+${t.currentMa} mA" else "${t.currentMa} mA"
+        tvVoltageVal.text = "${String.format("%.2f", t.voltageVolts)} V"
+        tvTempVal.text = "🌡️ ${String.format("%.1f", t.temperatureCelsius)}°C"
+        tvChargerTypeVal.text = "• ${t.chargerType}"
+
+        if (t.isCharging) {
+            ivChargingIcon.setImageResource(R.drawable.ic_charging_bolt)
+            tvChargingHeadline.setTextColor(ContextCompat.getColor(this, R.color.eco_green))
+            tvWattageVal.setTextColor(ContextCompat.getColor(this, R.color.eco_green))
+
+            val timeStr = BatteryAnalyticsHelper.formatDuration(t.timeRemainingMillis)
+            tvTimeToFullVal.text = "⏱️ ~$timeStr to 100%"
+            tvTimeToFullVal.visibility = View.VISIBLE
         } else {
-            tvBatteryPercent.text = "Battery Active"
+            ivChargingIcon.setImageResource(R.drawable.ic_battery_saver)
+            tvChargingHeadline.setTextColor(ContextCompat.getColor(this, R.color.subtext_gray))
+            tvWattageVal.setTextColor(ContextCompat.getColor(this, R.color.white))
+
+            val estHours = if (prefsManager.isExtremeModeEnabled) {
+                ((t.percentage / 100.0) * 120).toInt()
+            } else {
+                ((t.percentage / 100.0) * 48).toInt()
+            }
+            tvTimeToFullVal.text = "⏱️ ~${estHours}h runtime"
+            tvTimeToFullVal.visibility = View.VISIBLE
         }
     }
 
@@ -217,17 +290,14 @@ class MainActivity : AppCompatActivity() {
         val isSuper = prefsManager.isPowerSavingEnabled
 
         if (isExtreme) {
-            // 1% ULTRA EXTREME MODE UI
-            tvPowerState.text = "1% EXTREME BLACKOUT: ON"
+            tvPowerState.text = "1% EXTREME: ON"
             tvPowerState.setTextColor(ContextCompat.getColor(this, R.color.power_orange))
             btnExitMode.visibility = View.VISIBLE
 
-            // Hide 6-App List, show Calls & SMS cards only
             sectionAppsHeader.visibility = View.GONE
             rvAllowedApps.visibility = View.GONE
             cardEmergencySms.visibility = View.VISIBLE
 
-            // Extreme banner state
             tvExtremeTitle.text = "🔴 1% Survivor Mode Active"
             tvExtremeTitle.setTextColor(ContextCompat.getColor(this, R.color.power_red))
             tvExtremeSub.text = "Phone & SMS only • Monochrome • Ringtone works"
@@ -240,17 +310,14 @@ class MainActivity : AppCompatActivity() {
             btnTogglePower.setTextColor(ContextCompat.getColor(this, R.color.white))
 
         } else if (isSuper) {
-            // 10% SUPER MODE UI
-            tvPowerState.text = "10% Super Mode: ON"
+            tvPowerState.text = "10% Super: ON"
             tvPowerState.setTextColor(ContextCompat.getColor(this, R.color.eco_green))
             btnExitMode.visibility = View.VISIBLE
 
-            // Show 6-App List, hide SMS card
             sectionAppsHeader.visibility = View.VISIBLE
             rvAllowedApps.visibility = View.VISIBLE
             cardEmergencySms.visibility = View.GONE
 
-            // Extreme banner state
             tvExtremeTitle.text = getString(R.string.extreme_mode_banner_title)
             tvExtremeTitle.setTextColor(ContextCompat.getColor(this, R.color.power_orange))
             tvExtremeSub.text = getString(R.string.extreme_mode_banner_sub)
@@ -263,7 +330,6 @@ class MainActivity : AppCompatActivity() {
             btnTogglePower.setTextColor(ContextCompat.getColor(this, R.color.white))
 
         } else {
-            // NORMAL MODE UI
             tvPowerState.text = "Power Save: OFF"
             tvPowerState.setTextColor(ContextCompat.getColor(this, R.color.subtext_gray))
             btnExitMode.visibility = View.GONE
@@ -311,7 +377,7 @@ class MainActivity : AppCompatActivity() {
     private fun applyMonochromeGrayscale(enable: Boolean) {
         if (enable) {
             val matrix = ColorMatrix()
-            matrix.setSaturation(0f) // Pure Black & White Monochrome
+            matrix.setSaturation(0f)
             val filter = ColorMatrixColorFilter(matrix)
             val paint = Paint()
             paint.colorFilter = filter
