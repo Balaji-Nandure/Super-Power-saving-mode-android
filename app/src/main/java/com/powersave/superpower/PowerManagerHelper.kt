@@ -1,12 +1,16 @@
 package com.powersave.superpower
 
+import android.app.Activity
+import android.app.ActivityManager
+import android.app.role.RoleManager
+import android.content.ComponentName
 import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.PackageManager
 import android.os.BatteryManager
 import android.os.Build
-import android.os.PowerManager
 import android.provider.Settings
 import android.util.Log
 
@@ -65,6 +69,70 @@ object PowerManagerHelper {
     }
 
     /**
+     * Checks if Kiosk Accessibility Service is enabled.
+     */
+    fun isAccessibilityServiceEnabled(context: Context): Boolean {
+        val expectedComponentName = ComponentName(context, PowerKioskAccessibilityService::class.java).flattenToString()
+        val enabledServices = Settings.Secure.getString(
+            context.contentResolver,
+            Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
+        ) ?: return false
+        return enabledServices.contains(expectedComponentName)
+    }
+
+    /**
+     * Kills non-essential background processes to free RAM and stop CPU polling.
+     */
+    fun killAllBackgroundProcesses(context: Context) {
+        try {
+            val am = context.getSystemService(Context.ACTIVITY_SERVICE) as? ActivityManager ?: return
+            val pm = context.packageManager
+            val prefs = PreferencesManager(context)
+            val installedPackages = pm.getInstalledPackages(0)
+
+            for (pkgInfo in installedPackages) {
+                val pkgName = pkgInfo.packageName
+                // Do not kill self or whitelisted packages
+                if (pkgName != context.packageName && !prefs.isPackageAllowed(pkgName)) {
+                    am.killBackgroundProcesses(pkgName)
+                }
+            }
+            Log.d(TAG, "Background processes cleared.")
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to kill background processes: ${e.message}")
+        }
+    }
+
+    /**
+     * Prompts the user to set Super Power Saver as the Default Home Launcher.
+     */
+    fun promptSetDefaultLauncher(activity: Activity) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val roleManager = activity.getSystemService(RoleManager::class.java)
+            if (roleManager != null && roleManager.isRoleAvailable(RoleManager.ROLE_HOME)) {
+                if (!roleManager.isRoleHeld(RoleManager.ROLE_HOME)) {
+                    val intent = roleManager.createRequestRoleIntent(RoleManager.ROLE_HOME)
+                    activity.startActivity(intent)
+                    return
+                }
+            }
+        }
+        
+        // Fallback for earlier versions or if role manager is not available
+        val intent = Intent(Settings.ACTION_HOME_SETTINGS)
+        if (intent.resolveActivity(activity.packageManager) != null) {
+            activity.startActivity(intent)
+        } else {
+            // General launcher picker intent
+            val homeIntent = Intent(Intent.ACTION_MAIN).apply {
+                addCategory(Intent.CATEGORY_HOME)
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }
+            activity.startActivity(Intent.createChooser(homeIntent, "Select Super Power Saver"))
+        }
+    }
+
+    /**
      * Applies maximum hardware power-saving optimizations.
      */
     fun applySuperPowerSaving(context: Context) {
@@ -76,7 +144,10 @@ object PowerManagerHelper {
             Log.e(TAG, "Failed to disable auto sync: ${e.message}")
         }
 
-        // 2. Clamp Screen Timeout to 15s and Dim Brightness if permission granted
+        // 2. Kill heavy background processes
+        killAllBackgroundProcesses(context)
+
+        // 3. Clamp Screen Timeout to 15s and Dim Brightness if permission granted
         if (canWriteSystemSettings(context)) {
             try {
                 // Set screen off timeout to 15 seconds

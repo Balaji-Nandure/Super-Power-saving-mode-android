@@ -14,7 +14,11 @@
     <string name="power_stats_est">Est. Battery Life: ~48+ Hours</string>
     <string name="power_saving_tips">OLED Screen clamped • Background Sync OFF • Non-essential Wakelocks Blocked</string>
     <string name="btn_toggle_power">Toggle Ultra Power Mode</string>
-    <string name="btn_power_settings">Permission Setup</string>
+    <string name="btn_power_settings">OS Takeover Setup</string>
+    <string name="btn_exit_mode">Exit Mode</string>
+    <string name="dialog_exit_title">Exit Super Power Saving?</string>
+    <string name="dialog_exit_message">This will restore normal brightness, background sync, and your default home launcher.</string>
+    <string name="btn_set_default_launcher">Take Over Home Screen</string>
     
     <!-- App Selection Screen -->
     <string name="title_select_apps">Select Whitelisted Apps</string>
@@ -33,4 +37,11 @@
     <string name="perm_write_settings_desc">Required to auto-dim screen and lower screen timeout to 15 seconds.</string>
     <string name="perm_battery_opt_title">Ignore Battery Optimization</string>
     <string name="perm_battery_opt_desc">Allows Super Power Saver engine to maintain power gatekeeping continuously.</string>
+    
+    <!-- Accessibility Kiosk -->
+    <string name="accessibility_desc">Enforces Super Power Saving Mode by blocking unauthorized apps from running and waking the CPU.</string>
+    <string name="perm_accessibility_title">3. Kiosk App Blocker (Realme/Samsung Style)</string>
+    <string name="perm_accessibility_desc">Blocks unauthorized apps outside your 6 slots from opening.</string>
+    <string name="perm_home_title">4. Set Default Home Launcher</string>
+    <string name="perm_home_desc">Prevents exiting to heavy OS launcher when pressing Home button.</string>
 </resources>
