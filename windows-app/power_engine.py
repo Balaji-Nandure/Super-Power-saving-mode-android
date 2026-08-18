@@ -8,7 +8,7 @@ class WindowsPowerEngine:
     """
     Hardware-level Windows Power Management Engine.
     Operates via Windows powercfg, Kernel QoS, and Win32 Power APIs.
-    GUARANTEES ZERO PROCESS TERMINATION: User apps (like ufolee) are NEVER killed.
+    GUARANTEES ZERO PROCESS TERMINATION: All user apps and portable tools are NEVER killed.
     """
 
     def __init__(self):
@@ -27,7 +27,7 @@ class WindowsPowerEngine:
         2. Disables aggressive CPU Turbo Boost spikes
         3. Puts PCI Express link state to Maximum Power Saving
         4. Sets Windows Power Scheme to Power Saver on DC (Battery)
-        5. NEVER touches or kills any user applications (like ufolee)
+        5. NEVER touches or kills any user applications
         """
         try:
             # 1. Cap Processor Maximum State on Battery (DC) to 50%
@@ -103,7 +103,7 @@ class WindowsPowerEngine:
 
     def get_protected_processes(self) -> list:
         """
-        Detects active foreground and user-launched processes (e.g. ufolee, browsers, exam apps)
+        Detects active foreground and user-launched processes
         and verifies they are running safely.
         """
         safe_list = []

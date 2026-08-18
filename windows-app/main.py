@@ -147,7 +147,7 @@ class SuperPowerSaverApp:
 
         shield_desc = tk.Label(
             shield_card,
-            text="• Portable tools like 'ufolee', browsers, & exam apps are NEVER killed.\n• CPU Turbo spikes (28W ➔ 4W) are clamped safely at hardware level.\n• All exam questions, proctoring cameras, & connections run 100% normal.",
+            text="• All user applications, portable utilities, & exam clients are NEVER killed.\n• CPU Turbo spikes (28W ➔ 4W) are clamped safely at hardware level.\n• All exam questions, proctoring cameras, & connections run 100% normal.",
             font=("Segoe UI", 9),
             fg="#999999",
             bg="#141414",
@@ -183,7 +183,7 @@ class SuperPowerSaverApp:
                     "Exam Mode Activated",
                     "🎓 3-Hour Exam Mode is now ACTIVE!\n\n"
                     "• CPU is clamped to ultra-low power state (~4W)\n"
-                    "• Your portable apps (like ufolee) will continue running uninterrupted\n"
+                    "• Your portable apps and exam tools will continue running uninterrupted\n"
                     "• Fans will stay silent and battery runtime is maximized!"
                 )
         else:
@@ -210,7 +210,6 @@ class SuperPowerSaverApp:
         self.tv_power_val.config(text=f"~{t['estimated_watts']} W")
         self.tv_cpu_val.config(text=f"{t['cpu_freq_ghz']} GHz")
 
-        # Color-code based on status
         if t['percent'] <= 20 and not t['power_plugged']:
             self.progress_style.configure("Eco.Horizontal.TProgressbar", background="#FF3B30")
         else:

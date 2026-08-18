@@ -60,7 +60,7 @@ jobs:
             
             ### 💻 Windows Laptop Edition (Exam Hall Safe Mode):
             - 🎓 **3+ Hour Exam Mode**: Caps CPU wattage (28W ➔ 4W) safely via `powercfg`.
-            - 🛡️ **Zero-Kill Protection**: Portable apps (like `ufolee`, browsers, & exam clients) are **NEVER killed or closed**.
+            - 🛡️ **Zero-Kill Protection**: All user tools, browsers, & portable exam clients are **NEVER killed or closed**.
             - 📊 **Live Discharge Wattage & Battery Runtime HUD**.
             
             ### 📥 Downloads:
