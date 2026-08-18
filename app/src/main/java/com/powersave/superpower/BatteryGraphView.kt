@@ -29,7 +29,7 @@ class BatteryGraphView @JvmOverloads constructor(
 
     private val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.parseColor("#777777")
-        textSize = 28f
+        textSize = 26f
     }
 
     private val linePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -61,12 +61,12 @@ class BatteryGraphView @JvmOverloads constructor(
 
         val w = width.toFloat()
         val h = height.toFloat()
-        if (w <= 0 || h <= 0) return
+        if (w <= 0f || h <= 0f) return
 
         val paddingLeft = 60f
         val paddingRight = 30f
         val paddingTop = 30f
-        val paddingBottom = 60f
+        val paddingBottom = 50f
 
         val graphWidth = w - paddingLeft - paddingRight
         val graphHeight = h - paddingTop - paddingBottom
@@ -76,7 +76,7 @@ class BatteryGraphView @JvmOverloads constructor(
         for (lvl in levels) {
             val y = paddingTop + graphHeight * (1f - (lvl / 100f))
             canvas.drawLine(paddingLeft, y, w - paddingRight, y, gridPaint)
-            canvas.drawText("${lvl}%", 10f, y + 10f, textPaint)
+            canvas.drawText("${lvl}%", 8f, y + 8f, textPaint)
         }
 
         if (dataPoints.size < 2) return
@@ -84,7 +84,7 @@ class BatteryGraphView @JvmOverloads constructor(
         // 2. Compute Coordinate Points
         val minTime = dataPoints.first().timestamp
         val maxTime = dataPoints.last().timestamp
-        val timeSpan = (maxTime - minTime).coerceAtLeast(1)
+        val timeSpan = (maxTime - minTime).coerceAtLeast(1L).toFloat()
 
         val coords = mutableListOf<Pair<Float, Float>>()
         for (p in dataPoints) {
@@ -96,7 +96,7 @@ class BatteryGraphView @JvmOverloads constructor(
             coords.add(Pair(x, y))
         }
 
-        // 3. Build Smooth Bezier Path
+        // 3. Build Smooth Path
         val path = Path()
         val fillPath = Path()
 
@@ -107,8 +107,8 @@ class BatteryGraphView @JvmOverloads constructor(
         for (i in 0 until coords.size - 1) {
             val p0 = coords[i]
             val p1 = coords[i + 1]
-            val midX = (p0.first + p1.first) / 2
-            val midY = (p0.second + p1.second) / 2
+            val midX = (p0.first + p1.first) / 2f
+            val midY = (p0.second + p1.second) / 2f
 
             path.quadTo(p0.first, p0.second, midX, midY)
             fillPath.quadTo(p0.first, p0.second, midX, midY)
@@ -129,23 +129,22 @@ class BatteryGraphView @JvmOverloads constructor(
         fillPaint.shader = gradient
         canvas.drawPath(fillPath, fillPaint)
 
-        // 5. Draw Glowing Curve
+        // 5. Draw Curve
         canvas.drawPath(path, linePaint)
 
-        // 6. Draw Data Nodes & Timestamps
+        // 6. Draw Data Points & Timestamps
         for (i in coords.indices) {
             val c = coords[i]
             val point = dataPoints[i]
 
-            // Charging points glow Cyan, Discharging glow Green
             pointPaint.color = if (point.isCharging) Color.parseColor("#00E5FF") else Color.parseColor("#00E676")
-            canvas.drawCircle(c.first, c.second, 6f, pointPaint)
+            canvas.drawCircle(c.first, c.second, 5f, pointPaint)
 
-            // Draw timestamp for first and last point
             if (i == 0 || i == coords.size - 1 || i == coords.size / 2) {
                 val timeStr = timeFormat.format(Date(point.timestamp))
                 val textW = textPaint.measureText(timeStr)
-                canvas.drawText(timeStr, (c.first - textW / 2).coerceIn(paddingLeft, w - paddingRight - textW), h - 15f, textPaint)
+                val clampedX = (c.first - textW / 2f).coerceIn(paddingLeft, w - paddingRight - textW)
+                canvas.drawText(timeStr, clampedX, h - 10f, textPaint)
             }
         }
     }

@@ -27,6 +27,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import java.util.Locale
 
 class MainActivity : AppCompatActivity() {
 
@@ -63,7 +64,7 @@ class MainActivity : AppCompatActivity() {
     private val telemetryRunnable = object : Runnable {
         override fun run() {
             updateBatteryTelemetry()
-            telemetryHandler.postDelayed(this, 1500) // Live update every 1.5s
+            telemetryHandler.postDelayed(this, 1500)
         }
     }
 
@@ -127,7 +128,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // Samsung/Realme style: Pressing Back on Home Screen stays inside Super Power Saver
     override fun onBackPressed() {
         if (prefsManager.isPowerSavingEnabled || prefsManager.isExtremeModeEnabled) {
             return
@@ -152,7 +152,6 @@ class MainActivity : AppCompatActivity() {
         sectionAppsHeader = findViewById(R.id.sectionAppsHeader)
         rvAllowedApps = findViewById(R.id.rvAllowedApps)
 
-        // Telemetry HUD Elements
         cardBatteryHud = findViewById(R.id.cardBatteryHud)
         ivChargingIcon = findViewById(R.id.ivChargingIcon)
         tvChargingHeadline = findViewById(R.id.tvChargingHeadline)
@@ -165,7 +164,6 @@ class MainActivity : AppCompatActivity() {
 
         rvAllowedApps.layoutManager = LinearLayoutManager(this)
 
-        // 📈 Tap Battery HUD to open Full Visual Graph & Analytics Screen
         cardBatteryHud.isClickable = true
         cardBatteryHud.isFocusable = true
         cardBatteryHud.setOnClickListener {
@@ -173,7 +171,6 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        // Emergency / Phone Dialer Action
         cardEmergencyPhone.setOnClickListener {
             val dialIntent = Intent(Intent.ACTION_DIAL).apply {
                 data = Uri.parse("tel:")
@@ -181,7 +178,6 @@ class MainActivity : AppCompatActivity() {
             startActivity(dialIntent)
         }
 
-        // Emergency / SMS Action
         cardEmergencySms.setOnClickListener {
             val smsIntent = Intent(Intent.ACTION_MAIN).apply {
                 addCategory(Intent.CATEGORY_APP_MESSAGING)
@@ -195,18 +191,15 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // Configure 6 Whitelisted Apps
         btnConfigureApps.setOnClickListener {
             val intent = Intent(this, AppSelectionActivity::class.java)
             selectAppsLauncher.launch(intent)
         }
 
-        // Exit Mode Button (Realme / Samsung Style)
         btnExitMode.setOnClickListener {
             showExitConfirmationDialog()
         }
 
-        // 1% Extreme Blackout Mode Toggle
         btnToggleExtreme.setOnClickListener {
             if (prefsManager.isExtremeModeEnabled) {
                 prefsManager.isExtremeModeEnabled = false
@@ -220,7 +213,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // Toggle Standard 10% Power Saving Mode
         btnTogglePower.setOnClickListener {
             if (prefsManager.isExtremeModeEnabled) {
                 prefsManager.isExtremeModeEnabled = false
@@ -239,7 +231,6 @@ class MainActivity : AppCompatActivity() {
             updatePowerSaveStateUi()
         }
 
-        // Open Permissions Setup Dialog
         btnPermissionSetup.setOnClickListener {
             showPermissionsDialog()
         }
@@ -256,10 +247,10 @@ class MainActivity : AppCompatActivity() {
 
         tvBatteryPercent.text = "${t.percentage}%"
         tvChargingHeadline.text = t.chargeSpeedLabel
-        tvWattageVal.text = "${String.format("%.1f", t.wattage)} W"
+        tvWattageVal.text = "${String.format(Locale.US, "%.1f", t.wattage)} W"
         tvCurrentVal.text = if (t.currentMa > 0) "+${t.currentMa} mA" else "${t.currentMa} mA"
-        tvVoltageVal.text = "${String.format("%.2f", t.voltageVolts)} V"
-        tvTempVal.text = "🌡️ ${String.format("%.1f", t.temperatureCelsius)}°C"
+        tvVoltageVal.text = "${String.format(Locale.US, "%.2f", t.voltageVolts)} V"
+        tvTempVal.text = "🌡️ ${String.format(Locale.US, "%.1f", t.temperatureCelsius)}°C"
         tvChargerTypeVal.text = "• ${t.chargerType}"
 
         if (t.isCharging) {

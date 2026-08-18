@@ -13,24 +13,22 @@ class BatteryHistoryManager(private val context: Context) {
     companion object {
         private const val PREF_HISTORY = "battery_history_prefs"
         private const val KEY_HISTORY_DATA = "history_data"
-        private const val MAX_DATA_POINTS = 48 // 24 hours at 30-min resolution
+        private const val MAX_DATA_POINTS = 48
     }
 
     fun recordDataPoint(level: Int, isCharging: Boolean, isScreenOn: Boolean) {
         val currentPoints = getHistoryData().toMutableList()
         val now = System.currentTimeMillis()
 
-        // Don't record duplicate consecutive points within 2 minutes unless level changed
         if (currentPoints.isNotEmpty()) {
             val last = currentPoints.last()
-            if (last.level == level && (now - last.timestamp) < 120000) {
+            if (last.level == level && (now - last.timestamp) < 120000L) {
                 return
             }
         }
 
         currentPoints.add(BatteryDataPoint(now, level, isCharging, isScreenOn))
 
-        // Keep maximum points
         while (currentPoints.size > MAX_DATA_POINTS) {
             currentPoints.removeAt(0)
         }
@@ -55,15 +53,14 @@ class BatteryHistoryManager(private val context: Context) {
                 )
             }
         } catch (e: Exception) {
-            // Error parsing, fallback to empty
+            // Return default
         }
 
         if (list.isEmpty()) {
-            // Seed with realistic curve if fresh
             val now = System.currentTimeMillis()
             val currentLevel = PowerManagerHelper.getBatteryPercentage(context).coerceAtLeast(50)
-            list.add(BatteryDataPoint(now - 7200000, currentLevel + 4, false, false))
-            list.add(BatteryDataPoint(now - 3600000, currentLevel + 2, false, false))
+            list.add(BatteryDataPoint(now - 7200000L, currentLevel + 4, false, false))
+            list.add(BatteryDataPoint(now - 3600000L, currentLevel + 2, false, false))
             list.add(BatteryDataPoint(now, currentLevel, false, true))
         }
 
@@ -83,12 +80,9 @@ class BatteryHistoryManager(private val context: Context) {
         prefs.edit().putString(KEY_HISTORY_DATA, jsonArray.toString()).apply()
     }
 
-    /**
-     * Calculates Screen ON drain rate (%/hr) and Screen OFF standby drain rate (%/hr).
-     */
     fun computeDrainStats(): Pair<Double, Double> {
         val points = getHistoryData()
-        if (points.size < 2) return Pair(4.2, 0.4) // Standard super power saver baseline
+        if (points.size < 2) return Pair(3.8, 0.35)
 
         var screenOnDrain = 0
         var screenOnDurationMs = 0L
@@ -99,7 +93,6 @@ class BatteryHistoryManager(private val context: Context) {
             val p1 = points[i]
             val p2 = points[i + 1]
 
-            // Only count discharge segments
             if (!p1.isCharging && !p2.isCharging && p1.level >= p2.level) {
                 val delta = p1.level - p2.level
                 val duration = p2.timestamp - p1.timestamp
@@ -113,16 +106,16 @@ class BatteryHistoryManager(private val context: Context) {
             }
         }
 
-        val screenOnRate = if (screenOnDurationMs > 0) {
+        val screenOnRate = if (screenOnDurationMs > 0L) {
             (screenOnDrain.toDouble() / (screenOnDurationMs / 3600000.0)).coerceAtLeast(0.5)
         } else {
-            3.8 // ~3.8%/hr when in use
+            3.8
         }
 
-        val screenOffRate = if (screenOffDurationMs > 0) {
+        val screenOffRate = if (screenOffDurationMs > 0L) {
             (screenOffDrain.toDouble() / (screenOffDurationMs / 3600000.0)).coerceAtLeast(0.1)
         } else {
-            0.35 // ~0.35%/hr in deep sleep Super Mode
+            0.35
         }
 
         return Pair(screenOnRate, screenOffRate)

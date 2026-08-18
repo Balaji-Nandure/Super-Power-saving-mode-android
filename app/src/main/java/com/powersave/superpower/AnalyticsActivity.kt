@@ -5,6 +5,7 @@ import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import java.util.Locale
 
 class AnalyticsActivity : AppCompatActivity() {
 
@@ -69,12 +70,12 @@ class AnalyticsActivity : AppCompatActivity() {
         batteryGraphView.setData(historyPoints)
 
         val (screenOnRate, screenOffRate) = historyManager.computeDrainStats()
-        tvScreenOnDrain.text = "${String.format("%.1f", screenOnRate)}% / hr"
-        tvScreenOffDrain.text = "${String.format("%.2f", screenOffRate)}% / hr"
+        tvScreenOnDrain.text = "${String.format(Locale.US, "%.1f", screenOnRate)}% / hr"
+        tvScreenOffDrain.text = "${String.format(Locale.US, "%.2f", screenOffRate)}% / hr"
 
         val t = BatteryAnalyticsHelper.getRealTimeTelemetry(this)
-        tvDiagVoltage.text = "• Voltage: ${String.format("%.2f", t.voltageVolts)} V (${String.format("%.1f", t.wattage)}W)"
-        tvDiagTemp.text = "• Temperature: ${String.format("%.1f", t.temperatureCelsius)}°C (${if (t.temperatureCelsius < 36.0) "Optimal - No Thermal Throttling" else "Warm"})"
+        tvDiagVoltage.text = "• Voltage: ${String.format(Locale.US, "%.2f", t.voltageVolts)} V (${String.format(Locale.US, "%.1f", t.wattage)}W)"
+        tvDiagTemp.text = "• Temperature: ${String.format(Locale.US, "%.1f", t.temperatureCelsius)}°C (${if (t.temperatureCelsius < 36.0) "Optimal - No Thermal Throttling" else "Warm"})"
         tvDiagHealth.text = "• Battery Health: ${t.health}"
         tvDiagTech.text = "• Chemistry: ${t.technology} (High Efficiency)"
     }

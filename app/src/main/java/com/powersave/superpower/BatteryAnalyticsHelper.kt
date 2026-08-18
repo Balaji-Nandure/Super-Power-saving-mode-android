@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.BatteryManager
 import android.os.Build
+import java.util.Locale
 import kotlin.math.abs
 
 object BatteryAnalyticsHelper {
@@ -39,60 +40,56 @@ object BatteryAnalyticsHelper {
         // 4. Current (Microamperes -> Milliamperes)
         var rawCurrentUa = batteryManager?.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW) ?: 0
         if (rawCurrentUa == Int.MIN_VALUE || rawCurrentUa == 0) {
-            // Fallback estimation if kernel property is masked
             rawCurrentUa = if (isCharging) 2000000 else -250000
         }
 
         var currentMa = rawCurrentUa / 1000
-        // Standardize: Positive when charging, negative when discharging
         if (isCharging && currentMa < 0) {
             currentMa = abs(currentMa)
         } else if (!isCharging && currentMa > 0) {
             currentMa = -abs(currentMa)
         }
 
-        // 5. Wattage Calculation (Watts = Volts * Amps)
+        // 5. Wattage Calculation
         val absCurrentAmps = abs(currentMa) / 1000.0
         val wattage = voltageVolts * absCurrentAmps
 
         // 6. Charging Speed Label
         val chargeSpeedLabel = if (isCharging) {
             when {
-                wattage >= 45.0 -> "⚡ HyperCharge / SuperVOOC (${String.format("%.1f", wattage)}W)"
-                wattage >= 25.0 -> "⚡ Super Fast Charging (${String.format("%.1f", wattage)}W)"
-                wattage >= 15.0 -> "⚡ Quick Fast Charging (${String.format("%.1f", wattage)}W)"
-                wattage >= 8.0 -> "⚡ Standard Charging (${String.format("%.1f", wattage)}W)"
-                else -> "⚡ Slow Charging (${String.format("%.1f", wattage)}W)"
+                wattage >= 45.0 -> "⚡ HyperCharge / SuperVOOC (${String.format(Locale.US, "%.1f", wattage)}W)"
+                wattage >= 25.0 -> "⚡ Super Fast Charging (${String.format(Locale.US, "%.1f", wattage)}W)"
+                wattage >= 15.0 -> "⚡ Quick Fast Charging (${String.format(Locale.US, "%.1f", wattage)}W)"
+                wattage >= 8.0 -> "⚡ Standard Charging (${String.format(Locale.US, "%.1f", wattage)}W)"
+                else -> "⚡ Slow Charging (${String.format(Locale.US, "%.1f", wattage)}W)"
             }
         } else {
             when {
-                wattage <= 0.5 -> "🟢 Ultra-Low Drain (${String.format("%.2f", wattage)}W)"
-                wattage <= 1.2 -> "🟢 Optimal Eco Drain (${String.format("%.2f", wattage)}W)"
-                else -> "🟡 Moderate Drain (${String.format("%.2f", wattage)}W)"
+                wattage <= 0.5 -> "🟢 Ultra-Low Drain (${String.format(Locale.US, "%.2f", wattage)}W)"
+                wattage <= 1.2 -> "🟢 Optimal Eco Drain (${String.format(Locale.US, "%.2f", wattage)}W)"
+                else -> "🟡 Moderate Drain (${String.format(Locale.US, "%.2f", wattage)}W)"
             }
         }
 
-        // 7. Temperature (Tenths of degree -> Celsius)
+        // 7. Temperature
         val tempRaw = batteryStatus?.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 300) ?: 300
         val temperatureCelsius = tempRaw / 10.0
 
         // 8. Time Remaining to Full Charge
-        var timeRemainingMillis: Long = -1
+        var timeRemainingMillis: Long = -1L
         if (isCharging) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && batteryManager != null) {
                 try {
                     timeRemainingMillis = batteryManager.computeChargeTimeRemaining()
                 } catch (e: Exception) {
-                    timeRemainingMillis = -1
+                    timeRemainingMillis = -1L
                 }
             }
-            if (timeRemainingMillis <= 0 && currentMa > 0) {
-                // Intelligent mathematical fallback calculation
+            if (timeRemainingMillis <= 0L && currentMa > 0) {
                 val remainingCapacityPct = (100 - percentage).coerceAtLeast(0)
-                // Assume standard ~4500mAh nominal capacity
-                val remainingMah = (4500 * (remainingCapacityPct / 100.0))
+                val remainingMah = (4500.0 * (remainingCapacityPct / 100.0))
                 val hoursToFull = remainingMah / currentMa.toDouble()
-                timeRemainingMillis = (hoursToFull * 3600 * 1000).toLong()
+                timeRemainingMillis = (hoursToFull * 3600.0 * 1000.0).toLong()
             }
         }
 
@@ -125,11 +122,11 @@ object BatteryAnalyticsHelper {
     }
 
     fun formatDuration(millis: Long): String {
-        if (millis <= 0) return "--"
-        val totalMinutes = millis / (1000 * 60)
-        val hours = totalMinutes / 60
-        val mins = totalMinutes % 60
-        return if (hours > 0) {
+        if (millis <= 0L) return "--"
+        val totalMinutes = millis / (1000L * 60L)
+        val hours = totalMinutes / 60L
+        val mins = totalMinutes % 60L
+        return if (hours > 0L) {
             "${hours}h ${mins}m"
         } else {
             "${mins} mins"
