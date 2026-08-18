@@ -7,6 +7,9 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
+import android.graphics.ColorMatrix
+import android.graphics.ColorMatrixColorFilter
+import android.graphics.Paint
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -25,6 +28,7 @@ import androidx.recyclerview.widget.RecyclerView
 class MainActivity : AppCompatActivity() {
 
     private lateinit var prefsManager: PreferencesManager
+    private lateinit var rootLayout: View
     private lateinit var rvAllowedApps: RecyclerView
     private lateinit var tvBatteryPercent: TextView
     private lateinit var tvPowerState: TextView
@@ -33,6 +37,12 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnConfigureApps: TextView
     private lateinit var btnExitMode: View
     private lateinit var cardEmergencyPhone: View
+    private lateinit var cardEmergencySms: View
+    private lateinit var cardExtremeModeBanner: View
+    private lateinit var tvExtremeTitle: TextView
+    private lateinit var tvExtremeSub: TextView
+    private lateinit var btnToggleExtreme: Button
+    private lateinit var sectionAppsHeader: View
 
     private val selectAppsLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -58,8 +68,12 @@ class MainActivity : AppCompatActivity() {
         loadWhitelistedApps()
         updatePowerSaveStateUi()
 
-        if (prefsManager.isPowerSavingEnabled) {
+        if (prefsManager.isExtremeModeEnabled) {
+            PowerManagerHelper.applyExtremeSurvivorProfile(this)
+            applyMonochromeGrayscale(true)
+        } else if (prefsManager.isPowerSavingEnabled) {
             PowerManagerHelper.applySuperPowerSaving(this)
+            applyMonochromeGrayscale(false)
         }
     }
 
@@ -71,8 +85,9 @@ class MainActivity : AppCompatActivity() {
         updatePowerSaveStateUi()
 
         // Keep non-whitelisted background processes cleared
-        if (prefsManager.isPowerSavingEnabled) {
+        if (prefsManager.isPowerSavingEnabled || prefsManager.isExtremeModeEnabled) {
             PowerManagerHelper.killAllBackgroundProcesses(this)
+            PowerManagerHelper.ensureRingtoneAudible(this)
         }
     }
 
@@ -87,14 +102,14 @@ class MainActivity : AppCompatActivity() {
 
     // Samsung/Realme style: Pressing Back on Home Screen stays inside Super Power Saver
     override fun onBackPressed() {
-        if (prefsManager.isPowerSavingEnabled) {
-            // Do not exit on back press, stay in launcher
+        if (prefsManager.isPowerSavingEnabled || prefsManager.isExtremeModeEnabled) {
             return
         }
         super.onBackPressed()
     }
 
     private fun initViews() {
+        rootLayout = findViewById(R.id.rootLayout)
         tvBatteryPercent = findViewById(R.id.tvBatteryPercent)
         tvPowerState = findViewById(R.id.tvPowerState)
         btnTogglePower = findViewById(R.id.btnTogglePowerMode)
@@ -102,6 +117,12 @@ class MainActivity : AppCompatActivity() {
         btnConfigureApps = findViewById(R.id.btnConfigureApps)
         btnExitMode = findViewById(R.id.btnExitMode)
         cardEmergencyPhone = findViewById(R.id.cardEmergencyPhone)
+        cardEmergencySms = findViewById(R.id.cardEmergencySms)
+        cardExtremeModeBanner = findViewById(R.id.cardExtremeModeBanner)
+        tvExtremeTitle = findViewById(R.id.tvExtremeTitle)
+        tvExtremeSub = findViewById(R.id.tvExtremeSub)
+        btnToggleExtreme = findViewById(R.id.btnToggleExtreme)
+        sectionAppsHeader = findViewById(R.id.sectionAppsHeader)
         rvAllowedApps = findViewById(R.id.rvAllowedApps)
 
         rvAllowedApps.layoutManager = LinearLayoutManager(this)
@@ -112,6 +133,20 @@ class MainActivity : AppCompatActivity() {
                 data = Uri.parse("tel:")
             }
             startActivity(dialIntent)
+        }
+
+        // Emergency / SMS Action
+        cardEmergencySms.setOnClickListener {
+            val smsIntent = Intent(Intent.ACTION_MAIN).apply {
+                addCategory(Intent.CATEGORY_APP_MESSAGING)
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }
+            if (smsIntent.resolveActivity(packageManager) != null) {
+                startActivity(smsIntent)
+            } else {
+                val fallbackIntent = Intent(Intent.ACTION_VIEW, Uri.parse("sms:"))
+                startActivity(fallbackIntent)
+            }
         }
 
         // Configure 6 Whitelisted Apps
@@ -125,16 +160,37 @@ class MainActivity : AppCompatActivity() {
             showExitConfirmationDialog()
         }
 
-        // Toggle Super Power Saving Mode
+        // 1% Extreme Blackout Mode Toggle
+        btnToggleExtreme.setOnClickListener {
+            if (prefsManager.isExtremeModeEnabled) {
+                // Exit Extreme back to 10% Super Mode
+                prefsManager.isExtremeModeEnabled = false
+                prefsManager.isPowerSavingEnabled = true
+                PowerManagerHelper.applySuperPowerSaving(this)
+                applyMonochromeGrayscale(false)
+                Toast.makeText(this, "Switched to 10% Super Mode (6 Apps Active)", Toast.LENGTH_SHORT).show()
+                updatePowerSaveStateUi()
+            } else {
+                // Show Extreme Mode Activation Dialog
+                showExtremeModeConfirmationDialog()
+            }
+        }
+
+        // Toggle Standard 10% Power Saving Mode
         btnTogglePower.setOnClickListener {
+            if (prefsManager.isExtremeModeEnabled) {
+                prefsManager.isExtremeModeEnabled = false
+            }
             val newState = !prefsManager.isPowerSavingEnabled
             prefsManager.isPowerSavingEnabled = newState
             if (newState) {
                 PowerManagerHelper.applySuperPowerSaving(this)
-                Toast.makeText(this, "⚡ Super Power Saving Mode ACTIVATED", Toast.LENGTH_SHORT).show()
+                applyMonochromeGrayscale(false)
+                Toast.makeText(this, "⚡ 10% Super Power Mode ACTIVATED", Toast.LENGTH_SHORT).show()
             } else {
                 PowerManagerHelper.restoreNormalSettings(this)
-                Toast.makeText(this, "Super Power Saving Mode DEACTIVATED", Toast.LENGTH_SHORT).show()
+                applyMonochromeGrayscale(false)
+                Toast.makeText(this, "Power Saving Mode DEACTIVATED", Toast.LENGTH_SHORT).show()
             }
             updatePowerSaveStateUi()
         }
@@ -157,21 +213,75 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updatePowerSaveStateUi() {
-        val isEnabled = prefsManager.isPowerSavingEnabled
-        if (isEnabled) {
-            tvPowerState.text = "10% Power Mode: ON"
+        val isExtreme = prefsManager.isExtremeModeEnabled
+        val isSuper = prefsManager.isPowerSavingEnabled
+
+        if (isExtreme) {
+            // 1% ULTRA EXTREME MODE UI
+            tvPowerState.text = "1% EXTREME BLACKOUT: ON"
+            tvPowerState.setTextColor(ContextCompat.getColor(this, R.color.power_orange))
+            btnExitMode.visibility = View.VISIBLE
+
+            // Hide 6-App List, show Calls & SMS cards only
+            sectionAppsHeader.visibility = View.GONE
+            rvAllowedApps.visibility = View.GONE
+            cardEmergencySms.visibility = View.VISIBLE
+
+            // Extreme banner state
+            tvExtremeTitle.text = "🔴 1% Survivor Mode Active"
+            tvExtremeTitle.setTextColor(ContextCompat.getColor(this, R.color.power_red))
+            tvExtremeSub.text = "Phone & SMS only • Monochrome • Ringtone works"
+            btnToggleExtreme.text = "Back to 10%"
+            btnToggleExtreme.setBackgroundResource(R.drawable.bg_button_dark)
+            btnToggleExtreme.setTextColor(ContextCompat.getColor(this, R.color.white))
+
+            btnTogglePower.text = "Exit Power Mode"
+            btnTogglePower.setBackgroundResource(R.drawable.bg_button_dark)
+            btnTogglePower.setTextColor(ContextCompat.getColor(this, R.color.white))
+
+        } else if (isSuper) {
+            // 10% SUPER MODE UI
+            tvPowerState.text = "10% Super Mode: ON"
             tvPowerState.setTextColor(ContextCompat.getColor(this, R.color.eco_green))
+            btnExitMode.visibility = View.VISIBLE
+
+            // Show 6-App List, hide SMS card
+            sectionAppsHeader.visibility = View.VISIBLE
+            rvAllowedApps.visibility = View.VISIBLE
+            cardEmergencySms.visibility = View.GONE
+
+            // Extreme banner state
+            tvExtremeTitle.text = getString(R.string.extreme_mode_banner_title)
+            tvExtremeTitle.setTextColor(ContextCompat.getColor(this, R.color.power_orange))
+            tvExtremeSub.text = getString(R.string.extreme_mode_banner_sub)
+            btnToggleExtreme.text = "Go Extreme"
+            btnToggleExtreme.setBackgroundResource(R.drawable.bg_button_eco)
+            btnToggleExtreme.setTextColor(ContextCompat.getColor(this, R.color.black))
+
             btnTogglePower.text = "Disable Power Save"
             btnTogglePower.setBackgroundResource(R.drawable.bg_button_dark)
             btnTogglePower.setTextColor(ContextCompat.getColor(this, R.color.white))
-            btnExitMode.visibility = View.VISIBLE
+
         } else {
-            tvPowerState.text = "10% Power Mode: OFF"
-            tvPowerState.setTextColor(ContextCompat.getColor(this, R.color.power_orange))
+            // NORMAL MODE UI
+            tvPowerState.text = "Power Save: OFF"
+            tvPowerState.setTextColor(ContextCompat.getColor(this, R.color.subtext_gray))
+            btnExitMode.visibility = View.GONE
+
+            sectionAppsHeader.visibility = View.VISIBLE
+            rvAllowedApps.visibility = View.VISIBLE
+            cardEmergencySms.visibility = View.GONE
+
+            tvExtremeTitle.text = getString(R.string.extreme_mode_banner_title)
+            tvExtremeTitle.setTextColor(ContextCompat.getColor(this, R.color.subtext_gray))
+            tvExtremeSub.text = getString(R.string.extreme_mode_banner_sub)
+            btnToggleExtreme.text = "Go Extreme"
+            btnToggleExtreme.setBackgroundResource(R.drawable.bg_button_dark)
+            btnToggleExtreme.setTextColor(ContextCompat.getColor(this, R.color.white))
+
             btnTogglePower.text = "Enable 10% Power"
             btnTogglePower.setBackgroundResource(R.drawable.bg_button_eco)
             btnTogglePower.setTextColor(ContextCompat.getColor(this, R.color.black))
-            btnExitMode.visibility = View.GONE
         }
     }
 
@@ -198,15 +308,45 @@ class MainActivity : AppCompatActivity() {
         rvAllowedApps.adapter = adapter
     }
 
+    private fun applyMonochromeGrayscale(enable: Boolean) {
+        if (enable) {
+            val matrix = ColorMatrix()
+            matrix.setSaturation(0f) // Pure Black & White Monochrome
+            val filter = ColorMatrixColorFilter(matrix)
+            val paint = Paint()
+            paint.colorFilter = filter
+            rootLayout.setLayerType(View.LAYER_TYPE_HARDWARE, paint)
+        } else {
+            rootLayout.setLayerType(View.LAYER_TYPE_NONE, null)
+        }
+    }
+
+    private fun showExtremeModeConfirmationDialog() {
+        AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
+            .setTitle(getString(R.string.dialog_extreme_title))
+            .setMessage(getString(R.string.dialog_extreme_message))
+            .setPositiveButton(getString(R.string.dialog_extreme_confirm)) { _, _ ->
+                prefsManager.isExtremeModeEnabled = true
+                prefsManager.isPowerSavingEnabled = true
+                PowerManagerHelper.applyExtremeSurvivorProfile(this)
+                applyMonochromeGrayscale(true)
+                updatePowerSaveStateUi()
+                Toast.makeText(this, "🔥 1% Extreme Blackout Mode Active", Toast.LENGTH_SHORT).show()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
     private fun showExitConfirmationDialog() {
         AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
             .setTitle(getString(R.string.dialog_exit_title))
             .setMessage(getString(R.string.dialog_exit_message))
             .setPositiveButton("Exit Mode") { _, _ ->
+                prefsManager.isExtremeModeEnabled = false
                 prefsManager.isPowerSavingEnabled = false
                 PowerManagerHelper.restoreNormalSettings(this)
+                applyMonochromeGrayscale(false)
                 updatePowerSaveStateUi()
-                // Prompt user to switch back to normal launcher
                 PowerManagerHelper.promptSetDefaultLauncher(this)
                 Toast.makeText(this, "Exited Super Power Saving Mode", Toast.LENGTH_SHORT).show()
             }
@@ -255,7 +395,7 @@ class MainActivity : AppCompatActivity() {
         if (hasNotif) {
             btnNotification.text = "Active"
             btnNotification.isEnabled = false
-            tvNotificationStatus.text = "✓ Gatekeeper active (Only 6 apps allow notifications)"
+            tvNotificationStatus.text = "✓ Gatekeeper active (Only whitelisted apps notify)"
             tvNotificationStatus.setTextColor(ContextCompat.getColor(this, R.color.eco_green))
         } else {
             btnNotification.setOnClickListener {
@@ -269,7 +409,7 @@ class MainActivity : AppCompatActivity() {
         if (hasWrite) {
             btnWriteSettings.text = "Active"
             btnWriteSettings.isEnabled = false
-            tvWriteSettingsStatus.text = "✓ 15s timeout & screen dimming active"
+            tvWriteSettingsStatus.text = "✓ Display auto-dimming active"
             tvWriteSettingsStatus.setTextColor(ContextCompat.getColor(this, R.color.eco_green))
         } else {
             btnWriteSettings.setOnClickListener {

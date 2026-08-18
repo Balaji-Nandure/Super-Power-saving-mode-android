@@ -2,6 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/rootLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/oled_black"
@@ -79,7 +80,7 @@
         android:id="@+id/batteryStatusLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="8dp"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         app:layout_constraintTop_toBottomOf="@id/topBarLayout">
@@ -115,29 +116,80 @@
             android:textSize="12sp" />
     </LinearLayout>
 
+    <!-- 1% Extreme Blackout Mode Feature Card -->
+    <LinearLayout
+        android:id="@+id/cardExtremeModeBanner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:background="@drawable/bg_card_oled"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="12dp"
+        app:layout_constraintTop_toBottomOf="@id/batteryStatusLayout">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvExtremeTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/extreme_mode_banner_title"
+                android:textColor="@color/power_orange"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvExtremeSub"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Calls &amp; SMS only • Monochrome • Ringtone works"
+                android:textColor="@color/subtext_gray"
+                android:textSize="11sp" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btnToggleExtreme"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:background="@drawable/bg_button_eco"
+            android:text="Go Extreme"
+            android:textColor="@color/black"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            app:backgroundTint="@null" />
+    </LinearLayout>
+
     <!-- Emergency / Phone Priority Card -->
     <LinearLayout
         android:id="@+id/cardEmergencyPhone"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="14dp"
+        android:layout_marginTop="10dp"
         android:background="@drawable/bg_card_oled"
         android:clickable="true"
         android:focusable="true"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:padding="14dp"
-        app:layout_constraintTop_toBottomOf="@id/batteryStatusLayout">
+        android:padding="12dp"
+        app:layout_constraintTop_toBottomOf="@id/cardExtremeModeBanner">
 
         <ImageView
-            android:layout_width="30dp"
-            android:layout_height="30dp"
+            android:id="@+id/ivPhoneIcon"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
             android:src="@drawable/ic_phone" />
 
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="14dp"
+            android:layout_marginStart="12dp"
             android:layout_weight="1"
             android:orientation="vertical">
 
@@ -146,7 +198,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/emergency_phone"
                 android:textColor="@color/white"
-                android:textSize="16sp"
+                android:textSize="15sp"
                 android:textStyle="bold" />
 
             <TextView
@@ -154,7 +206,52 @@
                 android:layout_height="wrap_content"
                 android:text="@string/tap_to_call"
                 android:textColor="@color/subtext_gray"
-                android:textSize="12sp" />
+                android:textSize="11sp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Emergency / SMS Priority Card (Visible in Extreme Mode) -->
+    <LinearLayout
+        android:id="@+id/cardEmergencySms"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/bg_card_oled"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="12dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/cardEmergencyPhone">
+
+        <ImageView
+            android:id="@+id/ivSmsIcon"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:src="@drawable/ic_sms" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/emergency_sms"
+                android:textColor="@color/white"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/tap_to_sms"
+                android:textColor="@color/subtext_gray"
+                android:textSize="11sp" />
         </LinearLayout>
     </LinearLayout>
 
@@ -163,10 +260,10 @@
         android:id="@+id/sectionAppsHeader"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="12dp"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        app:layout_constraintTop_toBottomOf="@id/cardEmergencyPhone">
+        app:layout_constraintTop_toBottomOf="@id/cardEmergencySms">
 
         <TextView
             android:id="@+id/tvAllowedHeader"
@@ -175,7 +272,7 @@
             android:layout_weight="1"
             android:text="@string/allowed_apps_header"
             android:textColor="@color/white"
-            android:textSize="15sp"
+            android:textSize="14sp"
             android:textStyle="bold" />
 
         <TextView
@@ -184,12 +281,12 @@
             android:layout_height="wrap_content"
             android:background="@drawable/bg_button_dark"
             android:paddingStart="12dp"
-            android:paddingTop="6dp"
+            android:paddingTop="5dp"
             android:paddingEnd="12dp"
-            android:paddingBottom="6dp"
+            android:paddingBottom="5dp"
             android:text="Edit (6)"
             android:textColor="@color/eco_green"
-            android:textSize="13sp"
+            android:textSize="12sp"
             android:textStyle="bold" />
     </LinearLayout>
 
@@ -198,8 +295,8 @@
         android:id="@+id/rvAllowedApps"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="10dp"
+        android:layout_marginTop="6dp"
+        android:layout_marginBottom="8dp"
         app:layout_constraintBottom_toTopOf="@id/bottomControlsLayout"
         app:layout_constraintTop_toBottomOf="@id/sectionAppsHeader" />
 
@@ -215,7 +312,7 @@
             android:id="@+id/tvPowerTips"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
+            android:layout_marginBottom="8dp"
             android:gravity="center"
             android:text="@string/power_saving_tips"
             android:textColor="@color/subtext_gray"
@@ -229,25 +326,25 @@
             <Button
                 android:id="@+id/btnPermissionSetup"
                 android:layout_width="0dp"
-                android:layout_height="48dp"
-                android:layout_marginEnd="6dp"
+                android:layout_height="44dp"
+                android:layout_marginEnd="5dp"
                 android:layout_weight="1"
                 android:background="@drawable/bg_button_dark"
                 android:text="@string/btn_power_settings"
                 android:textColor="@color/white"
-                android:textSize="13sp"
+                android:textSize="12sp"
                 app:backgroundTint="@null" />
 
             <Button
                 android:id="@+id/btnTogglePowerMode"
                 android:layout_width="0dp"
-                android:layout_height="48dp"
-                android:layout_marginStart="6dp"
+                android:layout_height="44dp"
+                android:layout_marginStart="5dp"
                 android:layout_weight="1"
                 android:background="@drawable/bg_button_eco"
-                android:text="Toggle Power"
+                android:text="Toggle 10% Mode"
                 android:textColor="@color/black"
-                android:textSize="13sp"
+                android:textSize="12sp"
                 android:textStyle="bold"
                 app:backgroundTint="@null" />
         </LinearLayout>

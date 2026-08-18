@@ -8,7 +8,7 @@ import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.content.pm.PackageManager
+import android.media.AudioManager
 import android.os.BatteryManager
 import android.os.Build
 import android.provider.Settings
@@ -17,8 +17,10 @@ import android.util.Log
 object PowerManagerHelper {
 
     private const val TAG = "PowerManagerHelper"
-    private const val AGGRESSIVE_TIMEOUT_MS = 15000 // 15 seconds
-    private const val ECO_BRIGHTNESS = 25 // Out of 255 (approx 10%)
+    private const val SUPER_TIMEOUT_MS = 15000 // 15 seconds for 10% mode
+    private const val EXTREME_TIMEOUT_MS = 10000 // 10 seconds for 1% Extreme mode
+    private const val SUPER_BRIGHTNESS = 25 // Out of 255 (~10%)
+    private const val EXTREME_BRIGHTNESS = 10 // Out of 255 (~3% lowest OLED baseline)
 
     /**
      * Reads current battery percentage.
@@ -92,7 +94,6 @@ object PowerManagerHelper {
 
             for (pkgInfo in installedPackages) {
                 val pkgName = pkgInfo.packageName
-                // Do not kill self or whitelisted packages
                 if (pkgName != context.packageName && !prefs.isPackageAllowed(pkgName)) {
                     am.killBackgroundProcesses(pkgName)
                 }
@@ -118,12 +119,10 @@ object PowerManagerHelper {
             }
         }
         
-        // Fallback for earlier versions or if role manager is not available
         val intent = Intent(Settings.ACTION_HOME_SETTINGS)
         if (intent.resolveActivity(activity.packageManager) != null) {
             activity.startActivity(intent)
         } else {
-            // General launcher picker intent
             val homeIntent = Intent(Intent.ACTION_MAIN).apply {
                 addCategory(Intent.CATEGORY_HOME)
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK
@@ -133,30 +132,27 @@ object PowerManagerHelper {
     }
 
     /**
-     * Applies maximum hardware power-saving optimizations.
+     * Applies standard Tier 1 (10% Super Mode) optimizations.
      */
     fun applySuperPowerSaving(context: Context) {
         try {
-            // 1. Disable Master Auto-Sync (Saves background network poll & wakelocks)
             ContentResolver.setMasterSyncAutomatically(false)
-            Log.d(TAG, "Master auto-sync disabled.")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to disable auto sync: ${e.message}")
         }
 
-        // 2. Kill heavy background processes
         killAllBackgroundProcesses(context)
 
-        // 3. Clamp Screen Timeout to 15s and Dim Brightness if permission granted
+        // Ensure Phone Ringtone works normally
+        ensureRingtoneAudible(context)
+
         if (canWriteSystemSettings(context)) {
             try {
-                // Set screen off timeout to 15 seconds
                 Settings.System.putInt(
                     context.contentResolver,
                     Settings.System.SCREEN_OFF_TIMEOUT,
-                    AGGRESSIVE_TIMEOUT_MS
+                    SUPER_TIMEOUT_MS
                 )
-                // Set screen brightness to minimal ~10%
                 Settings.System.putInt(
                     context.contentResolver,
                     Settings.System.SCREEN_BRIGHTNESS_MODE,
@@ -165,12 +161,73 @@ object PowerManagerHelper {
                 Settings.System.putInt(
                     context.contentResolver,
                     Settings.System.SCREEN_BRIGHTNESS,
-                    ECO_BRIGHTNESS
+                    SUPER_BRIGHTNESS
                 )
-                Log.d(TAG, "Display clamped to 15s timeout and minimal brightness.")
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to apply display power savings: ${e.message}")
             }
+        }
+    }
+
+    /**
+     * Applies Tier 2 (1% ULTRA EXTREME BLACKOUT SURVIVOR) optimizations.
+     * RINGTONE REMAINS 100% OPERATIONAL. Touch haptics and background wakeups are killed.
+     */
+    fun applyExtremeSurvivorProfile(context: Context) {
+        try {
+            ContentResolver.setMasterSyncAutomatically(false)
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to disable auto sync: ${e.message}")
+        }
+
+        killAllBackgroundProcesses(context)
+
+        // Ensure Incoming Phone Call Ringtone is active and loud
+        ensureRingtoneAudible(context)
+
+        if (canWriteSystemSettings(context)) {
+            try {
+                // 10s Screen timeout
+                Settings.System.putInt(
+                    context.contentResolver,
+                    Settings.System.SCREEN_OFF_TIMEOUT,
+                    EXTREME_TIMEOUT_MS
+                )
+                // Minimum visible OLED brightness
+                Settings.System.putInt(
+                    context.contentResolver,
+                    Settings.System.SCREEN_BRIGHTNESS_MODE,
+                    Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL
+                )
+                Settings.System.putInt(
+                    context.contentResolver,
+                    Settings.System.SCREEN_BRIGHTNESS,
+                    EXTREME_BRIGHTNESS
+                )
+                // Disable power-hungry touch haptics/vibration motor (ringtone still rings normally)
+                Settings.System.putInt(
+                    context.contentResolver,
+                    Settings.System.HAPTIC_FEEDBACK_ENABLED,
+                    0
+                )
+                Log.d(TAG, "Applied 1% Extreme Blackout Profile.")
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to apply extreme settings: ${e.message}")
+            }
+        }
+    }
+
+    /**
+     * Ensures ringtone volume and mode is normal so calls are never missed.
+     */
+    fun ensureRingtoneAudible(context: Context) {
+        try {
+            val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as? AudioManager ?: return
+            if (audioManager.ringerMode == AudioManager.RINGER_MODE_SILENT) {
+                audioManager.ringerMode = AudioManager.RINGER_MODE_NORMAL
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error ensuring ringtone: ${e.message}")
         }
     }
 
@@ -195,6 +252,11 @@ object PowerManagerHelper {
                     context.contentResolver,
                     Settings.System.SCREEN_BRIGHTNESS_MODE,
                     Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC
+                )
+                Settings.System.putInt(
+                    context.contentResolver,
+                    Settings.System.HAPTIC_FEEDBACK_ENABLED,
+                    1
                 )
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to restore display settings: ${e.message}")

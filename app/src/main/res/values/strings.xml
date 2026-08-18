@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Super Power Saver</string>
-    <string name="app_tagline">Extreme 10% Power Consumption Mode</string>
+    <string name="app_tagline">Extreme Power Consumption Engine</string>
     
     <!-- Main Screen -->
     <string name="emergency_phone">Phone / Emergency</string>
@@ -9,16 +9,29 @@
     <string name="allowed_apps_header">Whitelisted Apps (Max 6)</string>
     <string name="allowed_apps_sub">Only these apps can send notifications and wake CPU</string>
     <string name="btn_configure_apps">Configure 6 Apps</string>
-    <string name="power_saving_active">Super Power Saving: ACTIVE</string>
-    <string name="power_saving_inactive">Super Power Saving: OFF</string>
+    <string name="power_saving_active">10% Super Mode: ACTIVE</string>
+    <string name="power_saving_inactive">Power Saving: OFF</string>
     <string name="power_stats_est">Est. Battery Life: ~48+ Hours</string>
-    <string name="power_saving_tips">OLED Screen clamped • Background Sync OFF • Non-essential Wakelocks Blocked</string>
-    <string name="btn_toggle_power">Toggle Ultra Power Mode</string>
+    <string name="power_saving_tips">OLED Clamped • Background Sync OFF • Non-essential Wakelocks Blocked</string>
+    <string name="btn_toggle_power">Toggle 10% Mode</string>
     <string name="btn_power_settings">OS Takeover Setup</string>
     <string name="btn_exit_mode">Exit Mode</string>
     <string name="dialog_exit_title">Exit Super Power Saving?</string>
     <string name="dialog_exit_message">This will restore normal brightness, background sync, and your default home launcher.</string>
     <string name="btn_set_default_launcher">Take Over Home Screen</string>
+    
+    <!-- 1% Extreme Blackout Mode -->
+    <string name="extreme_mode_banner_title">⚡ 1% Extreme Blackout Mode</string>
+    <string name="extreme_mode_banner_sub">Calls &amp; SMS only • Monochrome Grayscale • 10s Timeout • Ringtone Works</string>
+    <string name="btn_activate_extreme">Go Extreme (1%)</string>
+    <string name="dialog_extreme_title">Activate 1% Extreme Blackout?</string>
+    <string name="dialog_extreme_message">This activates the highest battery survival state:\n\n• Calls &amp; SMS only (All other apps locked)\n• Pure Monochrome Grayscale UI\n• 10-second timeout &amp; minimal brightness\n• Touch vibration motor killed\n\n🔔 Call ringtones will ring normally at full volume.</string>
+    <string name="dialog_extreme_confirm">Activate 1% Mode</string>
+    <string name="extreme_active_badge">1% EXTREME BLACKOUT: ACTIVE</string>
+    <string name="btn_exit_extreme">Exit to 10% Super Mode</string>
+    <string name="extreme_phone_sms_only">Phone &amp; SMS Active (1% Extreme Mode)</string>
+    <string name="emergency_sms">Messages / SMS</string>
+    <string name="tap_to_sms">Tap to open text messages</string>
     
     <!-- App Selection Screen -->
     <string name="title_select_apps">Select Whitelisted Apps</string>
@@ -41,7 +54,7 @@
     <!-- Accessibility Kiosk -->
     <string name="accessibility_desc">Enforces Super Power Saving Mode by blocking unauthorized apps from running and waking the CPU.</string>
     <string name="perm_accessibility_title">3. Kiosk App Blocker (Realme/Samsung Style)</string>
-    <string name="perm_accessibility_desc">Blocks unauthorized apps outside your 6 slots from opening.</string>
+    <string name="perm_accessibility_desc">Blocks unauthorized apps outside your whitelist from opening.</string>
     <string name="perm_home_title">4. Set Default Home Launcher</string>
     <string name="perm_home_desc">Prevents exiting to heavy OS launcher when pressing Home button.</string>
 </resources>
