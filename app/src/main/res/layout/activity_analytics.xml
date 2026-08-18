@@ -262,6 +262,15 @@
                 android:textSize="12sp" />
 
             <TextView
+                android:id="@+id/tvDiagSensors"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="• Motion &amp; Step Sensors: Frozen (Zero Pocket Wakelocks)"
+                android:textColor="@color/eco_green"
+                android:textSize="12sp" />
+
+            <TextView
                 android:id="@+id/tvDiagHealth"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

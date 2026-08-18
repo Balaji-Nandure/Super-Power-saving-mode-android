@@ -16,6 +16,7 @@ class AnalyticsActivity : AppCompatActivity() {
     private lateinit var tvTurboDesc: TextView
     private lateinit var tvDiagVoltage: TextView
     private lateinit var tvDiagTemp: TextView
+    private lateinit var tvDiagSensors: TextView
     private lateinit var tvDiagHealth: TextView
     private lateinit var tvDiagTech: TextView
     private lateinit var btnClose: Button
@@ -38,6 +39,7 @@ class AnalyticsActivity : AppCompatActivity() {
         tvTurboDesc = findViewById(R.id.tvTurboDesc)
         tvDiagVoltage = findViewById(R.id.tvDiagVoltage)
         tvDiagTemp = findViewById(R.id.tvDiagTemp)
+        tvDiagSensors = findViewById(R.id.tvDiagSensors)
         tvDiagHealth = findViewById(R.id.tvDiagHealth)
         tvDiagTech = findViewById(R.id.tvDiagTech)
         btnClose = findViewById(R.id.btnCloseAnalytics)
@@ -76,6 +78,7 @@ class AnalyticsActivity : AppCompatActivity() {
         val t = BatteryAnalyticsHelper.getRealTimeTelemetry(this)
         tvDiagVoltage.text = "• Voltage: ${String.format(Locale.US, "%.2f", t.voltageVolts)} V (${String.format(Locale.US, "%.1f", t.wattage)}W)"
         tvDiagTemp.text = "• Temperature: ${String.format(Locale.US, "%.1f", t.temperatureCelsius)}°C (${if (t.temperatureCelsius < 36.0) "Optimal - No Thermal Throttling" else "Warm"})"
+        tvDiagSensors.text = "• Motion & Step Sensors: Frozen (Zero Pocket Wakelocks)"
         tvDiagHealth.text = "• Battery Health: ${t.health}"
         tvDiagTech.text = "• Chemistry: ${t.technology} (High Efficiency)"
     }

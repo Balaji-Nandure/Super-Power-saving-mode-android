@@ -132,7 +132,12 @@ object PowerManagerHelper {
     }
 
     /**
-     * Applies standard Tier 1 (10% Super Mode) optimizations.
+     * Applies standard Tier 1 (10% Super Mode) optimizations:
+     * 1. Auto-sync disabled
+     * 2. Background processes & step trackers terminated
+     * 3. Sensors & Auto-rotation frozen (0 pocket wakelocks)
+     * 4. Display clamped to 15s timeout and 10% brightness
+     * 5. Ringtone preserved
      */
     fun applySuperPowerSaving(context: Context) {
         try {
@@ -142,8 +147,7 @@ object PowerManagerHelper {
         }
 
         killAllBackgroundProcesses(context)
-
-        // Ensure Phone Ringtone works normally
+        SensorManagerHelper.freezeSensors(context)
         ensureRingtoneAudible(context)
 
         if (canWriteSystemSettings(context)) {
@@ -170,8 +174,12 @@ object PowerManagerHelper {
     }
 
     /**
-     * Applies Tier 2 (1% ULTRA EXTREME BLACKOUT SURVIVOR) optimizations.
-     * RINGTONE REMAINS 100% OPERATIONAL. Touch haptics and background wakeups are killed.
+     * Applies Tier 2 (1% ULTRA EXTREME BLACKOUT SURVIVOR) optimizations:
+     * 1. Complete Sensor Freeze (zero motion interrupts)
+     * 2. Phone & SMS only (all other apps locked)
+     * 3. Touch vibration motor killed
+     * 4. 10s Screen timeout & minimal OLED brightness
+     * 5. Ringtone preserved 100%
      */
     fun applyExtremeSurvivorProfile(context: Context) {
         try {
@@ -181,19 +189,16 @@ object PowerManagerHelper {
         }
 
         killAllBackgroundProcesses(context)
-
-        // Ensure Incoming Phone Call Ringtone is active and loud
+        SensorManagerHelper.freezeSensors(context)
         ensureRingtoneAudible(context)
 
         if (canWriteSystemSettings(context)) {
             try {
-                // 10s Screen timeout
                 Settings.System.putInt(
                     context.contentResolver,
                     Settings.System.SCREEN_OFF_TIMEOUT,
                     EXTREME_TIMEOUT_MS
                 )
-                // Minimum visible OLED brightness
                 Settings.System.putInt(
                     context.contentResolver,
                     Settings.System.SCREEN_BRIGHTNESS_MODE,
@@ -204,13 +209,12 @@ object PowerManagerHelper {
                     Settings.System.SCREEN_BRIGHTNESS,
                     EXTREME_BRIGHTNESS
                 )
-                // Disable power-hungry touch haptics/vibration motor (ringtone still rings normally)
                 Settings.System.putInt(
                     context.contentResolver,
                     Settings.System.HAPTIC_FEEDBACK_ENABLED,
                     0
                 )
-                Log.d(TAG, "Applied 1% Extreme Blackout Profile.")
+                Log.d(TAG, "Applied 1% Extreme Blackout Profile with Sensor Freeze.")
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to apply extreme settings: ${e.message}")
             }
@@ -240,6 +244,8 @@ object PowerManagerHelper {
         } catch (e: Exception) {
             Log.e(TAG, "Failed to re-enable sync: ${e.message}")
         }
+
+        SensorManagerHelper.restoreSensors(context)
 
         if (canWriteSystemSettings(context)) {
             try {

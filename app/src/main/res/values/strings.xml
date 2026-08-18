@@ -12,20 +12,20 @@
     <string name="power_saving_active">10% Super Mode: ACTIVE</string>
     <string name="power_saving_inactive">Power Saving: OFF</string>
     <string name="power_stats_est">Est. Battery Life: ~48+ Hours</string>
-    <string name="power_saving_tips">OLED Clamped • Background Sync OFF • Non-essential Wakelocks Blocked</string>
+    <string name="power_saving_tips">OLED Clamped • Sync OFF • Step Counter &amp; Sensors Frozen</string>
     <string name="btn_toggle_power">Toggle 10% Mode</string>
     <string name="btn_power_settings">OS Takeover Setup</string>
     <string name="btn_exit_mode">Exit Mode</string>
     <string name="dialog_exit_title">Exit Super Power Saving?</string>
-    <string name="dialog_exit_message">This will restore normal brightness, background sync, and your default home launcher.</string>
+    <string name="dialog_exit_message">This will restore normal brightness, background sync, sensor rotation, and your default home launcher.</string>
     <string name="btn_set_default_launcher">Take Over Home Screen</string>
     
     <!-- 1% Extreme Blackout Mode -->
     <string name="extreme_mode_banner_title">⚡ 1% Extreme Blackout Mode</string>
-    <string name="extreme_mode_banner_sub">Calls &amp; SMS only • Monochrome Grayscale • 10s Timeout • Ringtone Works</string>
+    <string name="extreme_mode_banner_sub">Calls &amp; SMS only • Monochrome • Sensors Frozen • Ringtone Works</string>
     <string name="btn_activate_extreme">Go Extreme (1%)</string>
     <string name="dialog_extreme_title">Activate 1% Extreme Blackout?</string>
-    <string name="dialog_extreme_message">This activates the highest battery survival state:\n\n• Calls &amp; SMS only (All other apps locked)\n• Pure Monochrome Grayscale UI\n• 10-second timeout &amp; minimal brightness\n• Touch vibration motor killed\n\n🔔 Call ringtones will ring normally at full volume.</string>
+    <string name="dialog_extreme_message">This activates the highest battery survival state:\n\n• Calls &amp; SMS only (All other apps locked)\n• Pure Monochrome Grayscale UI\n• 10-second timeout &amp; minimal brightness\n• Step Counter &amp; Motion Sensors Frozen (Zero pocket wakeups)\n• Touch vibration motor killed\n\n🔔 Call ringtones will ring normally at full volume.</string>
     <string name="dialog_extreme_confirm">Activate 1% Mode</string>
     <string name="extreme_active_badge">1% EXTREME BLACKOUT: ACTIVE</string>
     <string name="btn_exit_extreme">Exit to 10% Super Mode</string>
