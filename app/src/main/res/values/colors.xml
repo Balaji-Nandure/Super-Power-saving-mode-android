@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- True OLED Black Theme Colors (0 Watts on AMOLED) -->
+    <color name="black">#000000</color>
+    <color name="oled_black">#000000</color>
+    <color name="dark_gray">#121212</color>
+    <color name="card_bg">#181818</color>
+    <color name="border_gray">#2C2C2C</color>
+    <color name="subtext_gray">#8E8E93</color>
+    <color name="white">#FFFFFF</color>
+    
+    <!-- Accent Energy Saving Colors -->
+    <color name="eco_green">#00E676</color>
+    <color name="eco_green_dim">#008A45</color>
+    <color name="power_orange">#FF9100</color>
+    <color name="power_red">#FF5252</color>
+    <color name="accent_blue">#2979FF</color>
+</resources>

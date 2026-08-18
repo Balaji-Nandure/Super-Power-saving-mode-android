@@ -1,0 +1,28 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Theme.SuperPowerSaving" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Primary brand color (OLED Black base) -->
+        <item name="colorPrimary">@color/eco_green</item>
+        <item name="colorPrimaryVariant">@color/eco_green_dim</item>
+        <item name="colorOnPrimary">@color/black</item>
+        
+        <!-- Secondary brand color -->
+        <item name="colorSecondary">@color/accent_blue</item>
+        <item name="colorSecondaryVariant">@color/accent_blue</item>
+        <item name="colorOnSecondary">@color/white</item>
+        
+        <!-- Status bar color & Window background (Pure 0W Black) -->
+        <item name="android:statusBarColor">@color/oled_black</item>
+        <item name="android:navigationBarColor">@color/oled_black</item>
+        <item name="android:windowBackground">@color/oled_black</item>
+        <item name="android:textColorPrimary">@color/white</item>
+        <item name="android:textColorSecondary">@color/subtext_gray</item>
+    </style>
+
+    <style name="Theme.SuperPowerSaving.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="android:statusBarColor">@color/oled_black</item>
+        <item name="android:navigationBarColor">@color/oled_black</item>
+    </style>
+</resources>

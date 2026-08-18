@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Super Power Saver</string>
+    <string name="app_tagline">Extreme 10% Power Consumption Mode</string>
+    
+    <!-- Main Screen -->
+    <string name="emergency_phone">Phone / Emergency</string>
+    <string name="tap_to_call">Tap to open phone dialer</string>
+    <string name="allowed_apps_header">Whitelisted Apps (Max 6)</string>
+    <string name="allowed_apps_sub">Only these apps can send notifications and wake CPU</string>
+    <string name="btn_configure_apps">Configure 6 Apps</string>
+    <string name="power_saving_active">Super Power Saving: ACTIVE</string>
+    <string name="power_saving_inactive">Super Power Saving: OFF</string>
+    <string name="power_stats_est">Est. Battery Life: ~48+ Hours</string>
+    <string name="power_saving_tips">OLED Screen clamped • Background Sync OFF • Non-essential Wakelocks Blocked</string>
+    <string name="btn_toggle_power">Toggle Ultra Power Mode</string>
+    <string name="btn_power_settings">Permission Setup</string>
+    
+    <!-- App Selection Screen -->
+    <string name="title_select_apps">Select Whitelisted Apps</string>
+    <string name="select_apps_limit_info">Choose up to 6 apps. All other apps will be blocked from sending background wake-up notifications.</string>
+    <string name="search_hint">Search installed apps...</string>
+    <string name="btn_save_selection">Save Selection (%1$d/6)</string>
+    <string name="toast_max_reached">Maximum 6 apps allowed for extreme power saving!</string>
+    <string name="toast_selection_saved">App whitelist updated successfully!</string>
+    
+    <!-- Permissions Screen / Prompts -->
+    <string name="perm_notification_title">Notification Access Required</string>
+    <string name="perm_notification_desc">Required to intercept &amp; silence unwanted notifications from waking the phone.</string>
+    <string name="perm_grant_btn">Grant Access</string>
+    <string name="perm_granted">Active &amp; Protecting</string>
+    <string name="perm_write_settings_title">Modify System Settings</string>
+    <string name="perm_write_settings_desc">Required to auto-dim screen and lower screen timeout to 15 seconds.</string>
+    <string name="perm_battery_opt_title">Ignore Battery Optimization</string>
+    <string name="perm_battery_opt_desc">Allows Super Power Saver engine to maintain power gatekeeping continuously.</string>
+</resources>
