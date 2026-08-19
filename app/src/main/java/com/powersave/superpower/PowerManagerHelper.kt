@@ -133,21 +133,41 @@ object PowerManagerHelper {
 
     /**
      * Applies standard Tier 1 (10% Super Mode) optimizations:
-     * 1. Auto-sync disabled
-     * 2. Background processes & step trackers terminated
-     * 3. Sensors & Auto-rotation frozen (0 pocket wakelocks)
-     * 4. Display clamped to 15s timeout and 10% brightness
-     * 5. Ringtone preserved
+     * Respects user's granular Hardware & Service toggle preferences.
      */
     fun applySuperPowerSaving(context: Context) {
-        try {
-            ContentResolver.setMasterSyncAutomatically(false)
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to disable auto sync: ${e.message}")
+        val prefs = PreferencesManager(context)
+
+        // 1. Auto-Sync
+        if (prefs.isAutoSyncDisabled) {
+            HardwareServiceManager.applyAutoSync(context, true)
         }
 
-        killAllBackgroundProcesses(context)
-        SensorManagerHelper.freezeSensors(context)
+        // 2. CPU Background Freezer
+        if (prefs.isCpuFreezerEnabled) {
+            HardwareServiceManager.applyCpuFreezer(context)
+        }
+
+        // 3. Motion Sensors Freeze
+        if (prefs.isSensorsFrozen) {
+            HardwareServiceManager.applySensors(context, true)
+        }
+
+        // 4. GPU Animation Optimizer
+        if (prefs.isGpuOptimizerEnabled) {
+            HardwareServiceManager.applyGpuOptimization(context, true)
+        }
+
+        // 5. 120Hz -> 60Hz Refresh Rate Throttle
+        if (prefs.isRefreshRateThrottled) {
+            HardwareServiceManager.applyRefreshRateClamp(context, true)
+        }
+
+        // 6. Haptics / Vibration
+        if (prefs.isHapticsDisabled) {
+            HardwareServiceManager.applyHaptics(context, true)
+        }
+
         ensureRingtoneAudible(context)
 
         if (canWriteSystemSettings(context)) {
@@ -182,14 +202,12 @@ object PowerManagerHelper {
      * 5. Ringtone preserved 100%
      */
     fun applyExtremeSurvivorProfile(context: Context) {
-        try {
-            ContentResolver.setMasterSyncAutomatically(false)
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to disable auto sync: ${e.message}")
-        }
-
-        killAllBackgroundProcesses(context)
-        SensorManagerHelper.freezeSensors(context)
+        HardwareServiceManager.applyAutoSync(context, true)
+        HardwareServiceManager.applyCpuFreezer(context)
+        HardwareServiceManager.applySensors(context, true)
+        HardwareServiceManager.applyGpuOptimization(context, true)
+        HardwareServiceManager.applyRefreshRateClamp(context, true)
+        HardwareServiceManager.applyHaptics(context, true)
         ensureRingtoneAudible(context)
 
         if (canWriteSystemSettings(context)) {
@@ -239,13 +257,11 @@ object PowerManagerHelper {
      * Restores normal settings when Super Power Saving is turned off.
      */
     fun restoreNormalSettings(context: Context) {
-        try {
-            ContentResolver.setMasterSyncAutomatically(true)
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to re-enable sync: ${e.message}")
-        }
-
-        SensorManagerHelper.restoreSensors(context)
+        HardwareServiceManager.applyAutoSync(context, false)
+        HardwareServiceManager.applySensors(context, false)
+        HardwareServiceManager.applyGpuOptimization(context, false)
+        HardwareServiceManager.applyRefreshRateClamp(context, false)
+        HardwareServiceManager.applyHaptics(context, false)
 
         if (canWriteSystemSettings(context)) {
             try {

@@ -50,10 +50,10 @@ class LauncherAppsAdapter(
                 }
             }
         } else {
-            // Empty slot for remaining whitelist (up to 6)
-            appHolder.tvName.text = "+ Add Allowed App"
+            // Add slot for configuring whitelist (up to 25)
+            appHolder.tvName.text = "+ Add / Manage Apps"
             appHolder.ivIcon.setImageResource(R.drawable.ic_apps)
-            appHolder.tvStatus.text = "Slot ${position + 1}/6"
+            appHolder.tvStatus.text = "${appList.size}/${PreferencesManager.MAX_ALLOWED_APPS} Selected"
             appHolder.tvStatus.setTextColor(ContextCompat.getColor(context, R.color.subtext_gray))
 
             appHolder.itemView.setOnClickListener {
@@ -62,8 +62,13 @@ class LauncherAppsAdapter(
         }
     }
 
-    // Always provide 6 slots total so the user clearly sees their 6 slots
-    override fun getItemCount(): Int = PreferencesManager.MAX_ALLOWED_APPS
+    override fun getItemCount(): Int {
+        return if (appList.size < PreferencesManager.MAX_ALLOWED_APPS) {
+            appList.size + 1
+        } else {
+            PreferencesManager.MAX_ALLOWED_APPS
+        }
+    }
 
     class AppViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val ivIcon: ImageView = itemView.findViewById(R.id.ivLauncherAppIcon)

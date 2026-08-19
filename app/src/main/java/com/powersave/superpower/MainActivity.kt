@@ -48,6 +48,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvExtremeSub: TextView
     private lateinit var btnToggleExtreme: Button
     private lateinit var sectionAppsHeader: View
+    private lateinit var cardHardwareMatrix: View
+    private lateinit var tvServicesBadge: TextView
 
     // ⚡ Telemetry HUD Views
     private lateinit var cardBatteryHud: View
@@ -110,6 +112,7 @@ class MainActivity : AppCompatActivity() {
         telemetryHandler.post(telemetryRunnable)
         loadWhitelistedApps()
         updatePowerSaveStateUi()
+        updateServicesBadge()
         logBatteryPoint()
 
         if (prefsManager.isPowerSavingEnabled || prefsManager.isExtremeModeEnabled) {
@@ -152,6 +155,9 @@ class MainActivity : AppCompatActivity() {
         sectionAppsHeader = findViewById(R.id.sectionAppsHeader)
         rvAllowedApps = findViewById(R.id.rvAllowedApps)
 
+        cardHardwareMatrix = findViewById(R.id.cardHardwareMatrix)
+        tvServicesBadge = findViewById(R.id.tvServicesBadge)
+
         cardBatteryHud = findViewById(R.id.cardBatteryHud)
         ivChargingIcon = findViewById(R.id.ivChargingIcon)
         tvChargingHeadline = findViewById(R.id.tvChargingHeadline)
@@ -168,6 +174,11 @@ class MainActivity : AppCompatActivity() {
         cardBatteryHud.isFocusable = true
         cardBatteryHud.setOnClickListener {
             val intent = Intent(this, AnalyticsActivity::class.java)
+            startActivity(intent)
+        }
+
+        cardHardwareMatrix.setOnClickListener {
+            val intent = Intent(this, HardwareControlsActivity::class.java)
             startActivity(intent)
         }
 
@@ -206,7 +217,7 @@ class MainActivity : AppCompatActivity() {
                 prefsManager.isPowerSavingEnabled = true
                 PowerManagerHelper.applySuperPowerSaving(this)
                 applyMonochromeGrayscale(false)
-                Toast.makeText(this, "Switched to 10% Super Mode (6 Apps Active)", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Switched to 10% Super Mode (Whitelisted Apps Active)", Toast.LENGTH_SHORT).show()
                 updatePowerSaveStateUi()
             } else {
                 showExtremeModeConfirmationDialog()
@@ -363,6 +374,7 @@ class MainActivity : AppCompatActivity() {
             selectAppsLauncher.launch(intent)
         }
         rvAllowedApps.adapter = adapter
+        btnConfigureApps.text = "Edit (${whitelistedPackages.size}/${PreferencesManager.MAX_ALLOWED_APPS})"
     }
 
     private fun applyMonochromeGrayscale(enable: Boolean) {
@@ -485,5 +497,19 @@ class MainActivity : AppCompatActivity() {
         }
 
         dialog.show()
+    }
+
+    private fun updateServicesBadge() {
+        val active = prefsManager.getActiveServiceThrottledCount()
+        val total = prefsManager.getTotalServicesCount()
+        tvServicesBadge.text = "$active/$total Throttled"
+
+        if (active >= 8) {
+            tvServicesBadge.setTextColor(ContextCompat.getColor(this, R.color.eco_green))
+        } else if (active >= 4) {
+            tvServicesBadge.setTextColor(ContextCompat.getColor(this, R.color.power_orange))
+        } else {
+            tvServicesBadge.setTextColor(ContextCompat.getColor(this, R.color.power_red))
+        }
     }
 }

@@ -30,7 +30,7 @@ class PowerKioskAccessibilityService : AccessibilityService() {
                 return
             }
 
-            // Check if package is allowed (Whitelisted 6 apps or Phone)
+            // Check if package is allowed (Whitelisted 25 apps, Keyboards, or Phone)
             if (!prefs.isPackageAllowed(packageName)) {
                 // Instantly block and redirect to Super Power Saver Home (Same as Samsung/Realme)
                 val homeIntent = Intent(this, MainActivity::class.java).apply {

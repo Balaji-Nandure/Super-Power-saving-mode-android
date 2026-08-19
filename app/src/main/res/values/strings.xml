@@ -6,9 +6,9 @@
     <!-- Main Screen -->
     <string name="emergency_phone">Phone / Emergency</string>
     <string name="tap_to_call">Tap to open phone dialer</string>
-    <string name="allowed_apps_header">Whitelisted Apps (Max 6)</string>
+    <string name="allowed_apps_header">Whitelisted Apps (Max 25)</string>
     <string name="allowed_apps_sub">Only these apps can send notifications and wake CPU</string>
-    <string name="btn_configure_apps">Configure 6 Apps</string>
+    <string name="btn_configure_apps">Configure Apps</string>
     <string name="power_saving_active">10% Super Mode: ACTIVE</string>
     <string name="power_saving_inactive">Power Saving: OFF</string>
     <string name="power_stats_est">Est. Battery Life: ~48+ Hours</string>
@@ -35,10 +35,10 @@
     
     <!-- App Selection Screen -->
     <string name="title_select_apps">Select Whitelisted Apps</string>
-    <string name="select_apps_limit_info">Choose up to 6 apps. All other apps will be blocked from sending background wake-up notifications.</string>
+    <string name="select_apps_limit_info">Choose up to 25 apps. All other apps will be blocked from sending background wake-up notifications.</string>
     <string name="search_hint">Search installed apps...</string>
-    <string name="btn_save_selection">Save Selection (%1$d/6)</string>
-    <string name="toast_max_reached">Maximum 6 apps allowed for extreme power saving!</string>
+    <string name="btn_save_selection">Save Selection (%1$d/25)</string>
+    <string name="toast_max_reached">Maximum 25 apps allowed for power saving!</string>
     <string name="toast_selection_saved">App whitelist updated successfully!</string>
     
     <!-- Permissions Screen / Prompts -->
@@ -57,4 +57,72 @@
     <string name="perm_accessibility_desc">Blocks unauthorized apps outside your whitelist from opening.</string>
     <string name="perm_home_title">4. Set Default Home Launcher</string>
     <string name="perm_home_desc">Prevents exiting to heavy OS launcher when pressing Home button.</string>
+
+    <!-- Hardware & Services Power Matrix -->
+    <string name="title_hardware_matrix">Hardware &amp; Services Matrix</string>
+    <string name="sub_hardware_matrix">Individual toggle control for maximum battery preservation</string>
+    <string name="btn_hardware_matrix">⚡ Services Matrix (%1$d/10)</string>
+    <string name="section_connectivity">📶 Radio &amp; Connectivity</string>
+    <string name="section_processor">⚡ Processor &amp; Graphics</string>
+    <string name="section_display">📳 Display, Sensors &amp; Feedback</string>
+    <string name="section_vivo_special">📱 Vivo X70 Pro+ Deep OS Tuning</string>
+
+    <!-- Service Item Titles & Descriptions -->
+    <string name="service_internet_title">Mobile Data / 5G Radio</string>
+    <string name="service_internet_desc">Stops background cellular data transfers &amp; high-frequency 5G tower hunting.</string>
+    <string name="service_internet_badge">⚡ -30% Drain</string>
+
+    <string name="service_wifi_title">Wi-Fi &amp; Location Scan</string>
+    <string name="service_wifi_desc">Disables Wi-Fi radio and background Wi-Fi network beacon scanning.</string>
+    <string name="service_wifi_badge">⚡ -15% Drain</string>
+
+    <string name="service_bluetooth_title">Bluetooth &amp; BLE Scan</string>
+    <string name="service_bluetooth_desc">Disables Bluetooth antenna and continuous BLE proximity beacons.</string>
+    <string name="service_bluetooth_badge">⚡ -10% Drain</string>
+
+    <string name="service_gpu_title">GPU Animation Engine</string>
+    <string name="service_gpu_desc">Sets window/transition animator scales to 0.0x, bypassing Adreno 660 GPU rendering.</string>
+    <string name="service_gpu_badge">⚡ -20% GPU Load</string>
+
+    <string name="service_cpu_title">CPU Aggressive Freezer</string>
+    <string name="service_cpu_desc">Continuously kills non-whitelisted apps and prevents Cortex-X1 core wakeups.</string>
+    <string name="service_cpu_badge">⚡ -40% CPU Spike</string>
+
+    <string name="service_refresh_title">120Hz ➔ 60Hz Display Throttle</string>
+    <string name="service_refresh_desc">Caps LTPO refresh rate down to 60Hz. Huge battery saver on AMOLED screen.</string>
+    <string name="service_refresh_badge">⚡ -25% Screen Draw</string>
+
+    <string name="service_gps_title">GPS / Location Services</string>
+    <string name="service_gps_desc">Halts high-power GNSS satellite tracking and background geolocation polling.</string>
+    <string name="service_gps_badge">⚡ -15% Drain</string>
+
+    <string name="service_haptics_title">Haptic Motors &amp; Vibration</string>
+    <string name="service_haptics_desc">Kills touch feedback and system vibration actuators (Ringtone still rings loudly).</string>
+    <string name="service_haptics_badge">⚡ -10% Drain</string>
+
+    <string name="service_sensors_title">Motion Sensors &amp; Step Counter</string>
+    <string name="service_sensors_desc">Freezes gyroscope, accelerometer &amp; gesture listeners to prevent pocket wakelocks.</string>
+    <string name="service_sensors_badge">⚡ 0 Wakelocks</string>
+
+    <string name="service_sync_title">Auto-Sync &amp; Cloud Push</string>
+    <string name="service_sync_desc">Disables Google master account auto-sync and third-party cloud polling.</string>
+    <string name="service_sync_badge">⚡ -20% Drain</string>
+
+    <!-- Vivo Specific Tuning Items -->
+    <string name="vivo_imanager_title">Vivo High Background Power Usage</string>
+    <string name="vivo_imanager_desc">Open Vivo iManager to restrict background power consumption for thirsty apps.</string>
+
+    <string name="vivo_autostart_title">Vivo Autostart Management</string>
+    <string name="vivo_autostart_desc">Block non-essential apps from launching themselves in the background.</string>
+
+    <string name="vivo_5g_title">Force 4G LTE Mode (Disable 5G)</string>
+    <string name="vivo_5g_desc">Snapdragon 888+ 5G modem burns heavy battery on standby. 4G LTE saves 30%+ power.</string>
+
+    <string name="vivo_resolution_title">Screen Resolution (WQHD+ ➔ FHD+)</string>
+    <string name="vivo_resolution_desc">Switch from Quad HD+ (1440p) to Full HD+ (1080p) to reduce GPU rendering load.</string>
+
+    <string name="btn_apply_all_services">Enable All 10 Protections</string>
+    <string name="btn_reset_services">Reset Defaults</string>
+    <string name="toast_all_services_enabled">All 10 Hardware &amp; Service Protections Activated!</string>
+    <string name="toast_services_reset">Service preferences reset to default.</string>
 </resources>

@@ -264,6 +264,80 @@
         </LinearLayout>
     </LinearLayout>
 
+    <!-- ⚙️ HARDWARE & SERVICES CONTROL MATRIX CARD -->
+    <LinearLayout
+        android:id="@+id/cardHardwareMatrix"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/bg_card_oled"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="10dp"
+        app:layout_constraintTop_toBottomOf="@id/cardBatteryHud">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="⚡ Services Power Matrix"
+                    android:textColor="@color/white"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvServicesBadge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:background="@drawable/bg_button_dark"
+                    android:paddingStart="6dp"
+                    android:paddingTop="2dp"
+                    android:paddingEnd="6dp"
+                    android:paddingBottom="2dp"
+                    android:text="10/10 Throttled"
+                    android:textColor="@color/eco_green"
+                    android:textSize="10sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tvServicesSub"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="Internet • Wi-Fi • Radio • GPU • CPU • 60Hz LTPO"
+                android:textColor="@color/subtext_gray"
+                android:textSize="10sp" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_button_dark"
+            android:paddingStart="10dp"
+            android:paddingTop="6dp"
+            android:paddingEnd="10dp"
+            android:paddingBottom="6dp"
+            android:text="Toggles ⚙"
+            android:textColor="@color/eco_green"
+            android:textSize="11sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
     <!-- 1% Extreme Blackout Mode Feature Card -->
     <LinearLayout
         android:id="@+id/cardExtremeModeBanner"
@@ -274,7 +348,7 @@
         android:gravity="center_vertical"
         android:orientation="horizontal"
         android:padding="10dp"
-        app:layout_constraintTop_toBottomOf="@id/cardBatteryHud">
+        app:layout_constraintTop_toBottomOf="@id/cardHardwareMatrix">
 
         <LinearLayout
             android:layout_width="0dp"
@@ -432,7 +506,7 @@
             android:paddingTop="4dp"
             android:paddingEnd="10dp"
             android:paddingBottom="4dp"
-            android:text="Edit (6)"
+            android:text="Edit Apps"
             android:textColor="@color/eco_green"
             android:textSize="11sp"
             android:textStyle="bold" />
